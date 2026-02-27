@@ -15,8 +15,8 @@ vendor/
 .envs/.env.production
 
 # Database files
-database/database.sqlite
 database/*.sqlite
+database/*.sqlite3
 
 # Logs
 app/log/*.log

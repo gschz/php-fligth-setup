@@ -58,8 +58,8 @@ $app->set('flight.content_length', false);
  *   - DB_CONNECTION=sqlite  → local development (fast, no server needed)
  *   - DB_CONNECTION=pgsql   → staging / production (PostgreSQL)
  *
- * For SQLite: set DB_DATABASE to the path of the .sqlite file, or leave
- *   empty to default to database/database.sqlite
+ * For SQLite: set DB_DATABASE to the path of the .sqlite3 file, or leave
+ *   empty to default to database/database.sqlite3
  * For PostgreSQL: set DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
  *   or set DATABASE_URL with a full DSN (e.g. Heroku DATABASE_URL).
  */
@@ -94,7 +94,7 @@ if ($dbUrl !== '' && $dbConnection === 'pgsql') {
     // SQLite (default for local development)
     $dbConfig = [
         'driver'   => 'sqlite',
-        'database' => (string)(getenv('DB_DATABASE') ?: PROJECT_ROOT . '/database/database.sqlite'),
+        'database' => (string)(getenv('DB_DATABASE') ?: PROJECT_ROOT . '/database/database.sqlite3'),
         'prefix'   => '',
         'foreign_key_constraints' => true,
     ];
