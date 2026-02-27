@@ -14,14 +14,16 @@ Proyecto base para FlightPHP v3 como **API REST pura** con Eloquent ORM, Phinx m
 ```bash
 composer install
 
-# Copiar la plantilla de configuración
-cp app/config/config_sample.php app/config/config.php
+# Copiar la plantilla de entorno para desarrollo local (SQLite por defecto)
+cp .envs/.env.example .envs/.env.local
+
+# Editar .envs/.env.local con tus valores (APP_KEY, etc.)
 
 # Crear el directorio de base de datos (si no existe)
 mkdir -p database
 
-# Arrancar el servidor de desarrollo (SQLite por defecto)
-composer start
+# Arrancar el servidor de desarrollo (carga .envs/.env.local automáticamente)
+composer dev
 ```
 
 Abrir http://localhost:8000/health
@@ -29,6 +31,7 @@ Abrir http://localhost:8000/health
 ## Multi-entorno: SQLite vs PostgreSQL
 
 Este proyecto usa `getenv()` para leer variables de entorno — sin loaders `.env` embebidos en la app.
+Los env files se cargan mediante `composer dev` / `composer dev:pg` antes de arrancar el servidor.
 
 | Variable | Descripción | Default |
 |---|---|---|
@@ -39,21 +42,35 @@ Este proyecto usa `getenv()` para leer variables de entorno — sin loaders `.en
 | `DB_PORT` | Puerto PostgreSQL | `5432` |
 | `DB_USERNAME` | Usuario PostgreSQL | `postgres` |
 | `DB_PASSWORD` | Contraseña PostgreSQL | _(vacío)_ |
+| `DATABASE_URL` | DSN completo (Heroku/Railway) — sobreescribe DB_* | _(vacío)_ |
 | `CORS_ALLOWED_ORIGINS` | Orígenes CORS permitidos | `*` |
 
 ### Desarrollo local (SQLite)
 
 ```bash
-composer start
+cp .envs/.env.example .envs/.env.local
+composer dev
 ```
 
 ### Desarrollo con PostgreSQL
 
 ```bash
-DB_CONNECTION=pgsql DB_HOST=localhost DB_DATABASE=myapp DB_USERNAME=postgres composer start:pg
+cp .envs/.env.pg.example .envs/.env.pg.local
+# Editar .envs/.env.pg.local con tus credenciales
+composer dev:pg
 ```
 
-Ver `.env.example` y `.envs/.env.example` / `.envs/.env.pg.example` para referencia.
+### Estructura de `.envs/`
+
+| Archivo | Descripción | Trackeado en git |
+|---|---|---|
+| `.env.example` | Plantilla SQLite (desarrollo local, default) | ✅ Sí |
+| `.env.pg.example` | Plantilla PostgreSQL (desarrollo local) | ✅ Sí |
+| `.env.production.example` | Referencia de producción (sin valores reales) | ✅ Sí |
+| `.env.local` | Valores reales SQLite locales | ❌ No (git-ignorado) |
+| `.env.pg.local` | Valores reales PostgreSQL locales | ❌ No (git-ignorado) |
+
+> **Nota:** `app/config/config.php` está trackeado en git — no contiene credenciales. No es necesario crearlo manualmente.
 
 ## Migraciones (Phinx)
 
@@ -79,8 +96,7 @@ project-root/
 │   ├── commands/        # Comandos CLI (Runway)
 │   ├── config/
 │   │   ├── bootstrap.php
-│   │   ├── config_sample.php  ← plantilla pública (trackeada en git)
-│   │   ├── config.php         ← git-ignorado, leer variables de entorno
+│   │   ├── config.php         ← trackeado en git, lee variables de entorno
 │   │   ├── routes.php         ← rutas API REST
 │   │   └── services.php       ← Eloquent Capsule + Tracy + Flight::db()
 │   ├── controllers/
@@ -94,14 +110,17 @@ project-root/
 │   ├── utils/
 │   │   └── ApiResponse.php
 │   └── views/           # Mantenido pero no expuesto como endpoints HTTP
+├── bin/
+│   └── dev.php          # Launcher: carga env file y arranca el servidor
 ├── database/
 │   ├── migrations/      # Migraciones Phinx
 │   └── seeders/         # Seeds Phinx
 ├── public/              # Web root (index.php)
 ├── tests/               # PHPUnit tests
 ├── .envs/
-│   ├── .env.example     ← plantilla SQLite
-│   └── .env.pg.example  ← plantilla PostgreSQL
+│   ├── .env.example            ← plantilla SQLite (trackeada en git)
+│   ├── .env.pg.example         ← plantilla PostgreSQL (trackeada en git)
+│   └── .env.production.example ← referencia producción (trackeada en git)
 ├── phinx.php            ← configuración de migraciones
 ├── phpstan.neon
 ├── .php-cs-fixer.php
@@ -122,24 +141,32 @@ project-root/
 ## Scripts y calidad (Composer)
 
 ```bash
-composer run test:unit      # PHPUnit
-composer run test:stan      # PHPStan análisis estático
-composer run rector:dry     # Rector (dry-run)
-composer run rector:fix     # Rector (fix)
-composer run lint            # PHP-CS-Fixer (dry-run)
-composer run lint:fix        # PHP-CS-Fixer (fix)
+composer dev            # Carga .envs/.env.local y arranca en :8000 (SQLite)
+composer dev:pg         # Carga .envs/.env.pg.local y arranca en :8000 (PostgreSQL)
+composer start          # Arranca sin cargar env file (usa variables ya seteadas)
+composer db:migrate     # Ejecuta migraciones (SQLite por defecto)
+composer db:migrate:pg  # Ejecuta migraciones con PostgreSQL
+composer db:migrate:test # Ejecuta migraciones en entorno de tests
+composer db:rollback    # Rollback de la última migración
+composer db:seed        # Ejecuta seeds
+composer test:unit      # PHPUnit
+composer test:stan      # PHPStan análisis estático
+composer rector:dry     # Rector (dry-run)
+composer rector:fix     # Rector (fix)
+composer lint           # PHP-CS-Fixer (dry-run)
+composer lint:fix       # PHP-CS-Fixer (fix)
 ```
 
 ## Configuración
 
-- `app/config/config_sample.php` — plantilla pública trackeada en git (sin credenciales)
-- `app/config/config.php` — git-ignorado, lee variables de entorno con `getenv()`
+- `app/config/config.php` — trackeado en git, sin credenciales, lee variables de entorno con `getenv()`
 - `app/config/services.php` — inicializa Eloquent Capsule, Tracy y `Flight::db()`
 - `app/config/routes.php` — define todas las rutas API REST
 
 ## Seguridad
 
 - Todos los valores sensibles se leen desde variables de entorno (nunca hardcodeados)
-- `config.php` es git-ignorado
+- `config.php` está trackeado en git (no contiene credenciales)
+- Los env files con valores reales (`.envs/.env.local`, `.envs/.env.pg.local`) están git-ignorados
 - CORS configurable via `CORS_ALLOWED_ORIGINS`
 - Security headers en todas las rutas API

@@ -9,9 +9,6 @@ vendor/
 /tests/phpunit/.phpunit.result.cache
 /app/cache/
 
-# Config with credentials
-app/config/config.php
-
 # Local env files (not examples)
 .envs/.env.local
 .envs/.env.pg.local

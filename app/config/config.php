@@ -5,17 +5,23 @@ declare(strict_types=1);
 use flight\Engine;
 
 /**
- * FlightPHP Config
+ * FlightPHP Application Config
  *
- * This file reads all sensitive values from environment variables.
- * Set them in your shell, in a .env file loaded externally, or via
- * your platform's config panel (Heroku, Railway, etc.).
+ * This file is tracked in git. It contains NO credentials.
+ * All sensitive/environment-specific values are read via getenv().
  *
- * For local development, create a .envs/.env.local file and load it
- * before starting the server (see composer scripts).
+ * Local development workflow:
+ *   1. Copy .envs/.env.example  →  .envs/.env.local       (SQLite, default)
+ *   2. Copy .envs/.env.pg.example → .envs/.env.pg.local   (PostgreSQL)
+ *   3. Use the composer scripts to load the env and start the server:
+ *        composer dev          →  loads .envs/.env.local,    starts on :8000
+ *        composer dev:pg       →  loads .envs/.env.pg.local, starts on :8000
  *
- * DO NOT hardcode credentials here. This file is git-ignored.
- * See config_sample.php for the template and .env.example for variables.
+ * On platforms like Heroku/Railway: set environment variables via the dashboard.
+ * DATABASE_URL is automatically parsed when present.
+ *
+ * @see .envs/.env.example      for SQLite local setup
+ * @see .envs/.env.pg.example   for PostgreSQL local setup
  */
 
 date_default_timezone_set('UTC');
@@ -55,7 +61,7 @@ $app->set('flight.content_length', false);
  * For SQLite: set DB_DATABASE to the path of the .sqlite file, or leave
  *   empty to default to database/database.sqlite
  * For PostgreSQL: set DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
- *   or set DB_URL with a full DSN (e.g. Heroku DATABASE_URL).
+ *   or set DATABASE_URL with a full DSN (e.g. Heroku DATABASE_URL).
  */
 $dbConnection = (string)(getenv('DB_CONNECTION') ?: 'sqlite');
 
