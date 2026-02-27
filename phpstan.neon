@@ -1,9 +1,9 @@
 parameters:
-    level: 8
+    level: max
+    treatPhpDocTypesAsCertain: false
     paths:
         - app
         - database
     excludePaths:
         - vendor
     phpVersion: 80400
-    checkMissingIterableValueType: false
