@@ -9,17 +9,14 @@ vendor/
 /tests/phpunit/.phpunit.result.cache
 /app/cache/
 
-# Config with credentials
-app/config/config.php
-
 # Local env files (not examples)
 .envs/.env.local
 .envs/.env.pg.local
 .envs/.env.production
 
 # Database files
-database/database.sqlite
 database/*.sqlite
+database/*.sqlite3
 
 # Logs
 app/log/*.log

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use flight\Engine;
-use flight\database\PdoWrapper;
+use flight\database\SimplePdo;
 use flight\debug\database\PdoQueryCapture;
 use flight\debug\tracy\TracyExtensionLoader;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -30,6 +30,7 @@ if (IS_DEVELOPMENT && PHP_SAPI !== 'cli') {
 } else {
     Debugger::enable(Debugger::Production);
 }
+
 Debugger::$logDirectory = PROJECT_ROOT . $ds . 'app' . $ds . 'log';
 
 // ── Eloquent ORM ──────────────────────────────────────────────────────────────
@@ -44,21 +45,51 @@ $capsule->bootEloquent();
 
 // ── Flight PdoWrapper (for raw queries via Flight::db()) ──────────────────────
 // Build a PDO DSN from the same config so Flight::db() still works alongside Eloquent.
-$driver = $dbConfig['driver'] ?? 'sqlite';
+$driver = is_string($dbConfig['driver'] ?? null)
+    ? $dbConfig['driver']
+    : 'sqlite';
 if ($driver === 'pgsql') {
+    $host = is_string($dbConfig['host'] ?? null)
+        ? $dbConfig['host']
+        : '127.0.0.1';
+    $portValue = $dbConfig['port'] ?? 5432;
+    if (is_int($portValue)) {
+        $port = $portValue;
+    } elseif (is_string($portValue) && ctype_digit($portValue)) {
+        $port = (int)$portValue;
+    } else {
+        $port = 5432;
+    }
+
+    $databaseName = is_string($dbConfig['database'] ?? null)
+        ? $dbConfig['database']
+        : 'app';
+
     $pdoDsn = sprintf(
         'pgsql:host=%s;port=%d;dbname=%s',
-        $dbConfig['host'] ?? '127.0.0.1',
-        (int)($dbConfig['port'] ?? 5432),
-        $dbConfig['database'] ?? 'app'
+        $host,
+        $port,
+        $databaseName
     );
-    $pdoUser     = $dbConfig['username'] ?? null;
-    $pdoPassword = $dbConfig['password'] ?? null;
+    $pdoUser     = is_string($dbConfig['username'] ?? null)
+        ? $dbConfig['username']
+        : null;
+    $pdoPassword = is_string($dbConfig['password'] ?? null)
+        ? $dbConfig['password']
+        : null;
 } else {
-    $pdoDsn      = 'sqlite:' . ($dbConfig['database'] ?? PROJECT_ROOT . '/database/database.sqlite');
+    $sqliteDatabase = $dbConfig['database'] ?? (PROJECT_ROOT . '/database/database.sqlite3');
+    $sqliteDatabase = is_string($sqliteDatabase)
+        ? $sqliteDatabase
+        : (PROJECT_ROOT . '/database/database.sqlite3');
+
+    $pdoDsn      = 'sqlite:' . $sqliteDatabase;
     $pdoUser     = null;
     $pdoPassword = null;
 }
 
-$pdoClass = (IS_DEVELOPMENT && Debugger::$showBar && PHP_SAPI !== 'cli') ? PdoQueryCapture::class : PdoWrapper::class;
+$pdoClass = (IS_DEVELOPMENT && Debugger::$showBar && PHP_SAPI !== 'cli')
+    ? PdoQueryCapture::class
+    : SimplePdo::class;
+
 $app->register('db', $pdoClass, [$pdoDsn, $pdoUser, $pdoPassword]);

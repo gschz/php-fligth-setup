@@ -16,9 +16,16 @@ if ($dbConnection === 'pgsql') {
         'charset'  => 'utf8',
     ];
 } else {
+    $sqlitePath = (string)(getenv('DB_DATABASE') ?: $projectRoot . '/database/database.sqlite3');
+    if (str_ends_with($sqlitePath, '.sqlite3')) {
+        $sqlitePath = substr($sqlitePath, 0, -strlen('.sqlite3'));
+    } elseif (str_ends_with($sqlitePath, '.sqlite')) {
+        $sqlitePath = substr($sqlitePath, 0, -strlen('.sqlite'));
+    }
+
     $adapterConfig = [
         'adapter' => 'sqlite',
-        'name'    => (string)(getenv('DB_DATABASE') ?: $projectRoot . '/database/database.sqlite'),
+        'name'    => $sqlitePath,
     ];
 }
 

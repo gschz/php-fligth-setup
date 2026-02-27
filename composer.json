@@ -40,9 +40,10 @@
     }
   },
   "scripts": {
-    "start": "php -S localhost:8000 -t public",
-    "start:pg": "APP_ENV=development DB_CONNECTION=pgsql php -S localhost:8000 -t public",
+    "dev": "php bin/dev.php .envs/.env.local",
+    "dev:pg": "php bin/dev.php .envs/.env.pg.local",
     "db:migrate": "vendor/bin/phinx migrate -c phinx.php",
+    "db:migrate:pg": "DB_CONNECTION=pgsql vendor/bin/phinx migrate -c phinx.php",
     "db:migrate:test": "vendor/bin/phinx migrate -c phinx.php -e testing",
     "db:rollback": "vendor/bin/phinx rollback -c phinx.php",
     "db:seed": "vendor/bin/phinx seed:run -c phinx.php",

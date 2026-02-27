@@ -13,7 +13,7 @@ use flight\net\Router;
  * @var Engine<object> $app
  */
 
-$router->group('/api/v1', function (Router $router) use ($app): void {
+$router->group('/api/v1', function (Router $router): void {
     $router->get('/users', [ApiExampleController::class, 'getUsers']);
     $router->get('/users/@id:[0-9]+', [ApiExampleController::class, 'getUser']);
     $router->post('/users', [ApiExampleController::class, 'createUser']);
