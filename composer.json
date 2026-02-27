@@ -40,20 +40,19 @@
     }
   },
   "scripts": {
-    "dev":             "php bin/dev.php .envs/.env.local",
-    "dev:pg":          "php bin/dev.php .envs/.env.pg.local",
-    "start":           "php -S localhost:8000 -t public",
-    "db:migrate":      "vendor/bin/phinx migrate -c phinx.php",
-    "db:migrate:pg":   "DB_CONNECTION=pgsql vendor/bin/phinx migrate -c phinx.php",
+    "dev": "php bin/dev.php .envs/.env.local",
+    "dev:pg": "php bin/dev.php .envs/.env.pg.local",
+    "db:migrate": "vendor/bin/phinx migrate -c phinx.php",
+    "db:migrate:pg": "DB_CONNECTION=pgsql vendor/bin/phinx migrate -c phinx.php",
     "db:migrate:test": "vendor/bin/phinx migrate -c phinx.php -e testing",
-    "db:rollback":     "vendor/bin/phinx rollback -c phinx.php",
-    "db:seed":         "vendor/bin/phinx seed:run -c phinx.php",
-    "test:unit":       "vendor/bin/phpunit -c tests/phpunit/phpunit.xml --testdox",
-    "test:stan":       "vendor/bin/phpstan analyze --configuration=phpstan.neon --memory-limit=512M",
-    "rector:dry":      "vendor/bin/rector --dry-run --clear-cache",
-    "rector:fix":      "vendor/bin/rector --clear-cache",
-    "lint":            "vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes --config=.php-cs-fixer.php",
-    "lint:fix":        "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php-cs-fixer.php"
+    "db:rollback": "vendor/bin/phinx rollback -c phinx.php",
+    "db:seed": "vendor/bin/phinx seed:run -c phinx.php",
+    "test:unit": "vendor/bin/phpunit -c tests/phpunit/phpunit.xml --testdox",
+    "test:stan": "vendor/bin/phpstan analyze --configuration=phpstan.neon --memory-limit=512M",
+    "rector:dry": "vendor/bin/rector --dry-run --clear-cache",
+    "rector:fix": "vendor/bin/rector --clear-cache",
+    "lint": "vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes --config=.php-cs-fixer.php",
+    "lint:fix": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php-cs-fixer.php"
   },
   "config": {
     "process-timeout": 0,

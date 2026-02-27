@@ -8,29 +8,30 @@ use flight\Engine;
 
 class ApiResponse
 {
-    /** @param Engine<object> $app */
-    public static function success(Engine $app, mixed $data, int $status = 200): void
+    /** @param Engine<object> $engine */
+    public static function success(Engine $engine, mixed $data, int $status = 200): void
     {
-        $app->json(['success' => true, 'data' => $data], $status);
+        $engine->json(['success' => true, 'data' => $data], $status);
     }
 
-    /** @param mixed $errors */
-    public static function error(Engine $app, string $message, int $status = 400, mixed $errors = null): void
+    /** @param Engine<object> $engine */
+    public static function error(Engine $engine, string $message, int $status = 400, mixed $errors = null): void
     {
         $payload = ['success' => false, 'message' => $message];
         if ($errors !== null) {
             $payload['errors'] = $errors;
         }
-        $app->json($payload, $status);
+
+        $engine->json($payload, $status);
     }
 
     /**
-     * @param mixed $data
+     * @param Engine<object> $engine
      * @param array<string, mixed> $extra
      */
-    public static function paginated(Engine $app, mixed $data, int $total, int $page, int $perPage, array $extra = []): void
+    public static function paginated(Engine $engine, mixed $data, int $total, int $page, int $perPage, array $extra = []): void
     {
-        $app->json(array_merge([
+        $engine->json(array_merge([
             'success' => true,
             'data'    => $data,
             'meta'    => [

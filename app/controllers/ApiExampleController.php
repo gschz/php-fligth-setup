@@ -39,6 +39,7 @@ class ApiExampleController
 
         if ($user === null) {
             ApiResponse::error($this->app, 'User not found', 404);
+
             return;
         }
 

@@ -26,7 +26,8 @@ class CorsMiddleware
 
         // Handle preflight requests
         if ($this->app->request()->method === 'OPTIONS') {
-            $this->app->response()->status(204)->send();
+            $this->app->response()->status(204);
+            $this->app->response()->send();
             exit;
         }
     }
