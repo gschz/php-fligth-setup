@@ -136,15 +136,33 @@
         <div class="status-grid">
             <div class="status-item">
                 <span class="status-label">Entorno</span>
-                <span class="status-value"><?= htmlspecialchars(APP_ENV) ?></span>
+                <span class="status-value">
+                    <?php if (defined('APP_ENV') && APP_ENV === 'development') : ?>
+                        <?= htmlspecialchars(APP_ENV, ENT_QUOTES, 'UTF-8') ?>
+                    <?php else : ?>
+                        Producción
+                    <?php endif; ?>
+                </span>
             </div>
             <div class="status-item">
                 <span class="status-label">PHP</span>
-                <span class="status-value"><?= phpversion() ?></span>
+                <span class="status-value">
+                    <?php if (defined('APP_ENV') && APP_ENV === 'development') : ?>
+                        <?= phpversion() ?>
+                    <?php else : ?>
+                        Oculto en producción
+                    <?php endif; ?>
+                </span>
             </div>
             <div class="status-item">
                 <span class="status-label">Base de Datos</span>
-                <span class="status-value"><?= getenv('DB_CONNECTION') ?: 'sqlite' ?></span>
+                <span class="status-value">
+                    <?php if (defined('APP_ENV') && APP_ENV === 'development') : ?>
+                        <?= htmlspecialchars(getenv('DB_CONNECTION') ?: 'sqlite', ENT_QUOTES, 'UTF-8') ?>
+                    <?php else : ?>
+                        Oculto en producción
+                    <?php endif; ?>
+                </span>
             </div>
         </div>
 
