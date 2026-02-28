@@ -149,8 +149,8 @@ final class ApiEndpointsTest extends TestCase
             'HTTP_HOST' => 'localhost',
             'SERVER_NAME' => 'localhost',
             'SERVER_PORT' => '8000',
-            'CONTENT_TYPE' => 'application/json',
-            'CONTENT_LENGTH' => '0',
+            'CONTENT_TYPE' => 'application/x-www-form-urlencoded',
+            'CONTENT_LENGTH' => (string) strlen(http_build_query($_POST)),
         ]);
 
         ob_start();
