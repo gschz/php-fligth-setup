@@ -68,10 +68,11 @@ $app->set('flight.content_length', false);
  */
 $dbConnection = (string)(getenv('DB_CONNECTION') ?: 'sqlite');
 
-// Support Heroku-style DATABASE_URL
+// Soporte para DATABASE_URL estilo Heroku/Railway — tiene precedencia y auto-infiere pgsql
 $dbUrl = (string)(getenv('DATABASE_URL') ?: '');
-if ($dbUrl !== '' && $dbConnection === 'pgsql') {
-    $parsed      = parse_url($dbUrl);
+if ($dbUrl !== '') {
+    $dbConnection = 'pgsql';
+    $parsed      = parse_url($dbUrl) ?: [];
     $dbConfig    = [
         'driver'   => 'pgsql',
         'host'     => (string)($parsed['host'] ?? '127.0.0.1'),
@@ -121,7 +122,7 @@ if ($dbUrl !== '' && $dbConnection === 'pgsql') {
 return [
     'app' => [
         'env'   => $appEnv,
-        'debug' => (bool)(getenv('APP_DEBUG') ?: !IS_PRODUCTION),
+        'debug' => filter_var(getenv('APP_DEBUG') ?: '0', FILTER_VALIDATE_BOOLEAN),
         'key'   => (string)(getenv('APP_KEY') ?: ''),
     ],
     'database' => array_merge(['connection' => $dbConnection], $dbConfig),
