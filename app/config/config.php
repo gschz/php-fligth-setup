@@ -72,7 +72,7 @@ $dbConnection = (string)(getenv('DB_CONNECTION') ?: 'sqlite');
 $dbUrl = (string)(getenv('DATABASE_URL') ?: '');
 if ($dbUrl !== '') {
     $dbConnection = 'pgsql';
-    $parsed      = parse_url($dbUrl);
+    $parsed      = parse_url($dbUrl) ?: [];
     $dbConfig    = [
         'driver'   => 'pgsql',
         'host'     => (string)($parsed['host'] ?? '127.0.0.1'),
@@ -122,7 +122,7 @@ if ($dbUrl !== '') {
 return [
     'app' => [
         'env'   => $appEnv,
-        'debug' => (bool)(getenv('APP_DEBUG') ?: !IS_PRODUCTION),
+        'debug' => filter_var(getenv('APP_DEBUG') ?: '0', FILTER_VALIDATE_BOOLEAN),
         'key'   => (string)(getenv('APP_KEY') ?: ''),
     ],
     'database' => array_merge(['connection' => $dbConnection], $dbConfig),

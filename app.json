@@ -11,7 +11,7 @@
     },
     "APP_DEBUG": {
       "description": "Modo debug (false en producción)",
-      "value": "false"
+      "value": "0"
     },
     "APP_KEY": {
       "description": "Clave secreta de la aplicación. Generar con: php -r '$b = base64_encode(random_bytes(32)); echo \"base64:$b\";'",
