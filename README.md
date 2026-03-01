@@ -200,47 +200,5 @@ composer lint:fix         # PHP-CS-Fixer (fix)
 
 ## Deploy en Heroku
 
-### Prerequisitos
-
-- [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) instalado
-- Cuenta en [heroku.com](https://heroku.com)
-
-### Pasos
-
-```bash
-# Login
-heroku login
-
-# Crear app
-heroku create tu-app-name
-
-# Agregar Heroku Postgres (setea DATABASE_URL automáticamente)
-heroku addons:create heroku-postgresql:essential-0
-
-# Configurar variables de entorno
-heroku config:set APP_ENV=production
-heroku config:set APP_DEBUG=false
-heroku config:set APP_KEY=$(php -r '$b = base64_encode(random_bytes(32)); echo "base64:$b";')
-heroku config:set CORS_ALLOWED_ORIGINS=*
-heroku config:set LOG_LEVEL=error
-
-# Deploy
-git push heroku main
-
-# Verificar
-heroku open /health
-heroku logs --tail
-```
-
-### Variables de entorno en Heroku
-
-| Variable               | Descripción                      | Cómo setearla                              |
-| ---------------------- | -------------------------------- | ------------------------------------------ |
-| `DATABASE_URL`         | DSN de PostgreSQL                | Seteada automáticamente por el addon       |
-| `APP_ENV`              | Entorno de la aplicación         | `heroku config:set APP_ENV=production`     |
-| `APP_KEY`              | Clave secreta de la aplicación   | Ver comando arriba                         |
-| `APP_DEBUG`            | Modo debug (false en producción) | `heroku config:set APP_DEBUG=false`        |
-| `CORS_ALLOWED_ORIGINS` | Orígenes CORS permitidos         | `heroku config:set CORS_ALLOWED_ORIGINS=*` |
-| `LOG_LEVEL`            | Nivel de logging                 | `heroku config:set LOG_LEVEL=error`        |
-
-> Las migraciones se ejecutan automáticamente en cada deploy gracias al script `post-install-cmd` en `composer.json` (`bin/migrate-if-production.php`).
+Este proyecto está listo para desplegarse en Heroku sin configuración adicional.
+Ver la guía completa de deploy y operaciones en [docs/HEROKU_OPERATIONS.md](docs/HEROKU_OPERATIONS.md).
