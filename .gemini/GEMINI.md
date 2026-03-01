@@ -22,16 +22,26 @@ project-root/
 │   ├── controllers/    # Route controllers (e.g., HomeController.php)
 │   ├── logic/          # (For large projects) Business logic classes/services, called from controllers
 │   ├── middlewares/    # Custom middleware classes/functions
-│   ├── models/         # Data models (if needed, usually using flightphp/active-record)
+│   ├── models/         # Data models extending Illuminate\Database\Eloquent\Model
 │   ├── utils/          # Utility/helper functions
 │   └── views/          # View templates (if using)
 │
+├── .envs/               # Environment templates (*.example committed, *.local git-ignored)
+├── bin/                 # Helper scripts (dev.php, migrate-if-production.php)
+├── database/
+│   ├── migrations/      # Phinx migration files
+│   └── seeders/         # Phinx seed files
+├── docs/                # Project documentation
+│   └── CODE_QUALITY_LOCAL.md
 ├── public/             # Web root (index.php, assets, etc.)
 │
 ├── vendor/             # Composer dependencies
 │
 ├── tests/              # Unit and integration tests
 │
+├── Procfile             # Heroku process types (web + release phase)
+├── app.json             # Heroku app manifest
+├── phinx.php            # Phinx migration configuration (multi-env: SQLite / PostgreSQL)
 ├── composer.json       # Composer config
 │
 └── README.md           # Project overview
@@ -42,20 +52,32 @@ project-root/
 - **Namespaces:** Use lowercase namespaces for all classes in the `app/` directory. For example, `app/controllers/HomeController.php` should have the namespace `app\controllers`.
 - **Middlewares:** Store reusable middleware in `app/middlewares/`. Register them in your bootstrap or route files.
 - **Utils:** Place helper functions and utilities in `app/utils/`.
-- **Models:** If your app uses data models, keep them in `app/models/`.
+- **ORM:** This project uses **Eloquent ORM** (via `illuminate/database` Capsule) for all database interactions. Models go in `app/models/` and extend `Illuminate\Database\Eloquent\Model`. The `flightphp/active-record` package is NOT used.
+- **Migrations:** Use **Phinx** (`robmorgan/phinx`) for database schema migrations and seeders. Migration files go in `database/migrations/`, seeders in `database/seeders/`. Run with `composer db:migrate` / `composer db:seed`.
+- **Models:** Data models live in `app/models/` and extend `Illuminate\Database\Eloquent\Model`. Use Eloquent's full API (relationships, scopes, etc.).
 - **Views:** Store templates in `app/views/` if using a templating engine.
-- **Config:** Use the `app/config/` directory for configuration files. The main config file is `config.php`, which should be created by copying `config_sample.php` and updating as needed. In other main bootstrap files like bootstrap, and services.php, the $config variable is available to use to access configuration values.
+- **Config:** Use the `app/config/` directory for configuration files. `config.php` is tracked in git and reads all values via `getenv()` — it contains no credentials. `$config['database']` holds the connection array passed directly to Eloquent Capsule in `services.php`.
 - **Public:** Only expose the `public/` directory to the web server. All requests should go through `public/index.php`.
-- **Environment:** Do not use .env files; all configuration should be managed in `app/config/config.php`.
+- **Environment:** All configuration is read via `getenv()` inside `app/config/config.php` (tracked in git, contains no credentials).
+  Do NOT hardcode credentials in any tracked file. For local development, create `.envs/.env.local`
+  (SQLite, default) or `.envs/.env.pg.local` (PostgreSQL) by copying the corresponding `.envs/*.example`
+  template, then load it with `composer dev` / `composer dev:pg` (via `bin/dev.php`).
+  In production (Heroku/Railway), set environment variables directly in the platform's config panel.
+  The files `.envs/*.local` and `.envs/*.production` are git-ignored; only `.envs/*.example` files
+  are committed as reference templates. Do NOT use `vlucas/phpdotenv` or any runtime `.env` loader —
+  the app reads env vars already present in the process via `getenv()`.
 - **Routes:** Define routes in `app/config/routes.php`. Use the `$router->map()` method to register routes with all request methods or `$router->get()` for `GET $router->post()` for POST etc. and associate them with controller methods. Best practice for defining the controller is [ MyController::class, 'myMethod' ].
 
 ## Getting Started
 
 1. Clone the repository and run `composer install`.
-2. Copy `app/config/config_sample.php` to `app/config/config.php` and update configuration values as needed.
-3. Set your web server's document root to the `public/` directory.
-4. Add new controllers, middlewares, and utilities as needed, following the structure above.
-5. Register routes and middlewares in your bootstrap file (usually `public/index.php`).
+2. Copy `.envs/.env.example` to `.envs/.env.local` and update values (APP_KEY, etc.).
+   For PostgreSQL: copy `.envs/.env.pg.example` to `.envs/.env.pg.local`.
+3. Run migrations: `composer db:migrate` (and optionally `composer db:seed`).
+4. Start the dev server: `composer dev` (SQLite) or `composer dev:pg` (PostgreSQL).
+5. The web root is `public/`. All requests go through `public/index.php`.
+6. For production deployment (Heroku): set env vars in the platform panel. The `Procfile`
+   release phase runs `php bin/migrate-if-production.php` automatically on each deploy.
 
 ## CLI Commands
 
@@ -85,8 +107,9 @@ For more details, see the README file or visit the Flight documentation.
 Flight is highly extensible. Here are some recommended packages and plugins for common needs:
 
 - **ORM / Database:**
+  - [illuminate/database](https://github.com/illuminate/database) — Eloquent ORM (already included)
+  - [illuminate/events](https://github.com/illuminate/events) — Required by Eloquent Capsule (already included)
   - [flightphp/core](https://github.com/flightphp/core) PdoWrapper (simple PDO wrapper)
-  - [flightphp/active-record](https://github.com/flightphp/active-record) (official ORM/Mapper)
   - [byjg/php-migration](https://github.com/byjg/php-migration) (database migrations)
 - **Session:**
   - [flightphp/session](https://github.com/flightphp/session) (official session library)
@@ -116,6 +139,18 @@ Flight is highly extensible. Here are some recommended packages and plugins for 
   - [Flight OpenAPI Generator](https://daniel-schreiber.de/blog/flightphp-openapi-generator.html) (API-first approach)
 
 Choose the packages that best fit your project's needs. Official Flight packages are recommended for core functionality.
+
+## Deployment
+
+### Heroku
+- Set `APP_ENV=production`, `APP_DEBUG=0`, `APP_KEY`, and `DATABASE_URL` in Heroku config vars.
+- `DATABASE_URL` (set automatically by the Heroku Postgres add-on) takes precedence over individual `DB_*` vars and enables PostgreSQL with SSL.
+- The `Procfile` `release:` phase runs `php bin/migrate-if-production.php` automatically on each deploy, ensuring migrations run against the live database before the new dyno is promoted.
+- Do NOT run migrations during the build phase (no DB access there).
+
+### Other platforms (Railway, Render, Fly.io)
+- Set the same env vars. `DATABASE_URL` is supported on all major platforms.
+- Point the web process to `public/` as document root.
 
 ## Security Best Practices (Condensed)
 

@@ -96,6 +96,21 @@ composer dev:pg
 
 > **Nota:** `app/config/config.php` está trackeado en git — no contiene credenciales. No es necesario crearlo manualmente.
 
+## Decisiones arquitectónicas
+
+Este skeleton adopta decisiones que se apartan deliberadamente del FlightPHP vanilla:
+
+| Decisión | Por qué |
+|---|---|
+| **Eloquent ORM** en lugar de `flightphp/active-record` | Ecosistema maduro, relaciones, scopes, soporte nativo para SQLite y PostgreSQL sin cambio de código |
+| **Variables de entorno vía `getenv()`** en lugar de hardcodear en `config.php` | Portabilidad entre entornos (local, staging, producción, CI). Compatible con Heroku, Railway, Fly.io, etc. |
+| **`.envs/*.env.*` para desarrollo local** | Perfiles explícitos por entorno sin depender de loaders en runtime. Cargado por `bin/dev.php` antes de arrancar el servidor. |
+| **Phinx** para migraciones | Independiente de Laravel, compatible con SQLite y PostgreSQL, integrado con Runway CLI |
+| **Release phase en Heroku** (`Procfile`) | Las migraciones corren con acceso a la DB, antes de promover el nuevo dyno, sin riesgo de ejecutarlas en build time |
+| **PHPStan level max + Rector + PHP-CS-Fixer** | Estándares de calidad de código modernos, compatibles con PHP 8.4 |
+
+> Ver también: [docs/CODE_QUALITY_LOCAL.md](docs/CODE_QUALITY_LOCAL.md) para la guía de calidad de código y convención bilingüe del proyecto.
+
 ## Migraciones (Phinx)
 
 ```bash
