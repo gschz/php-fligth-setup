@@ -44,9 +44,6 @@
     }
   },
   "scripts": {
-    "post-install-cmd": [
-      "php bin/migrate-if-production.php"
-    ],
     "dev": "php bin/dev.php .envs/.env.local",
     "dev:pg": "php bin/dev.php .envs/.env.pg.local",
     "db:migrate": "vendor/bin/phinx migrate -c phinx.php",

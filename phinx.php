@@ -19,13 +19,13 @@ $dbConnection = (string)(getenv('DB_CONNECTION') ?: 'sqlite');
 
 // DATABASE_URL (Heroku/Railway) tiene precedencia sobre las variables DB_* individuales
 if ($dbUrl !== '') {
-    $parsed       = parse_url($dbUrl);
+    $parsed       = parse_url($dbUrl) ?: [];
     $dbConnection = 'pgsql';
     $pgHost       = (string)($parsed['host'] ?? '127.0.0.1');
     $pgPort       = (int)($parsed['port'] ?? 5432);
-    $pgName       = ltrim((string)($parsed['path'] ?? 'app'), '/');
-    $pgUser       = (string)($parsed['user'] ?? '');
-    $pgPass       = (string)($parsed['pass'] ?? '');
+    $pgName       = ltrim(urldecode((string)($parsed['path'] ?? 'app')), '/');
+    $pgUser       = urldecode((string)($parsed['user'] ?? ''));
+    $pgPass       = urldecode((string)($parsed['pass'] ?? ''));
 } else {
     $pgHost = (string)(getenv('DB_HOST') ?: '127.0.0.1');
     $pgPort = (int)(getenv('DB_PORT') ?: 5432);
@@ -67,6 +67,7 @@ return [
             'user'    => $pgUser,
             'pass'    => $pgPass,
             'charset' => 'utf8',
+            'sslmode' => $dbUrl !== '' ? 'require' : (string)(getenv('DB_SSLMODE') ?: 'prefer'),
         ],
         'testing' => [
             'adapter' => 'sqlite',

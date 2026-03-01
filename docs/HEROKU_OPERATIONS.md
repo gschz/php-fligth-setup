@@ -26,7 +26,7 @@ heroku addons:create heroku-postgresql:essential-0
 
 # Configurar variables de entorno
 heroku config:set APP_ENV=production
-heroku config:set APP_DEBUG=false
+heroku config:set APP_DEBUG=0
 heroku config:set APP_KEY=$(php -r '$b = base64_encode(random_bytes(32)); echo "base64:$b";')
 heroku config:set CORS_ALLOWED_ORIGINS=*
 heroku config:set LOG_LEVEL=error
@@ -40,7 +40,7 @@ heroku logs --tail
 ```
 
 > Las migraciones se ejecutan **automáticamente** en cada deploy gracias al script
-> `bin/migrate-if-production.php` configurado como `post-install-cmd` en `composer.json`.
+> `bin/migrate-if-production.php` configurado como `release` en `Procfile`.
 > No es necesario correrlas manualmente después del primer deploy.
 
 ### Variables de entorno requeridas
@@ -50,7 +50,7 @@ heroku logs --tail
 | `DATABASE_URL`         | DSN de PostgreSQL                | Seteada automáticamente por el addon       |
 | `APP_ENV`              | Entorno de la aplicación         | `heroku config:set APP_ENV=production`     |
 | `APP_KEY`              | Clave secreta de la aplicación   | Ver comando arriba                         |
-| `APP_DEBUG`            | Modo debug (false en producción) | `heroku config:set APP_DEBUG=false`        |
+| `APP_DEBUG`            | Modo debug (false en producción) | `heroku config:set APP_DEBUG=0`            |
 | `CORS_ALLOWED_ORIGINS` | Orígenes CORS permitidos         | `heroku config:set CORS_ALLOWED_ORIGINS=*` |
 | `LOG_LEVEL`            | Nivel de logging                 | `heroku config:set LOG_LEVEL=error`        |
 
@@ -89,7 +89,7 @@ heroku config:get APP_ENV
 heroku config:set APP_KEY=base64:...
 
 # Setear múltiples variables a la vez
-heroku config:set APP_ENV=production APP_DEBUG=false LOG_LEVEL=error
+heroku config:set APP_ENV=production APP_DEBUG=0 LOG_LEVEL=error
 
 # Eliminar una variable
 heroku config:unset MI_VARIABLE
@@ -195,7 +195,7 @@ heroku run "vendor/bin/phinx rollback -c phinx.php -t 0"
 ```
 
 > Las migraciones se ejecutan **automáticamente** en cada deploy gracias al script
-> `bin/migrate-if-production.php` configurado como `post-install-cmd` en `composer.json`.
+> `bin/migrate-if-production.php` configurado como `release` en `Procfile`.
 > El comando manual es útil para verificar el estado o forzar una corrección.
 
 ### Seeds
